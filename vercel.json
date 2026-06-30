@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/epg/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
