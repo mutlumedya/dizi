@@ -1,0 +1,63 @@
+İndex.html
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root { --bg: #0a0a0c; --card-bg: #151518; --live-red: #ff4757; --accent: #00a8ff; --yellow: #ffd700; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .wrapper { width: 100%; max-width: 600px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .main-title { font-size: 24px; font-weight: bold; color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .sub-title { font-size: 14px; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .live-badge { background: var(--live-red); padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .progress-bar { width: 80px; height: 5px; background: #333; border-radius: 3px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: var(--yellow); box-shadow: 0 0 10px var(--yellow); position: relative; transition: width 0.5s ease; }
+        .progress-fill::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); animation: flow 1.5s infinite; }
+        @keyframes flow { 0% { left: -100%; } 100% { left: 100%; } }
+        #footer { text-align: center; color: #555; margin-top: 20px; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <div class="main-title">📺 Mutlu Player</div>
+        <div class="sub-title">Yayın Akışı</div>
+    </div>
+    <div id="epg-container">Yükleniyor...</div>
+    <div id="footer">
+        <div>© 2026 <span style="color:var(--accent)">Connect Plus</span> Özel Yayınıdır.</div>
+        <div id="update-time"></div>
+    </div>
+</div>
+<script>
+    function loadEPG() {
+        fetch('data/epg.json').then(r => r.json()).then(data => {
+            document.getElementById('update-time').innerText = "Son Güncelleme: " + data.last_updated;
+            document.getElementById('epg-container').innerHTML = data.programs.map(item => {
+                let total = 90; // Program süresini 90dk varsayıyoruz
+                let percentage = Math.min(Math.max((total - item.remaining) / total * 100, 0), 100);
+                return 
+                <div class="card">
+                    <div style="flex: 1; overflow: hidden;">
+                        <div style="font-weight:bold; font-size:15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</div>
+                        <div style="color:#aaa; font-size:12px">${item.channel}</div>
+                        <div style="margin:5px 0; font-size:12px">${item.start} - <span style="color:var(--yellow)">${item.stop}</span></div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${percentage}%"></div></div>
+                            <div style="font-size:10px; color:#aaa">${item.remaining} dk kaldı</div>
+                        </div>
+                    </div>
+                    <div class="live-badge" style="margin-left:10px">CANLI</div>
+                </div>;
+            }).join('');
+        });
+    }
+    loadEPG();
+    setInterval(loadEPG, 60000);
+</script>
+</body>
+</html>
